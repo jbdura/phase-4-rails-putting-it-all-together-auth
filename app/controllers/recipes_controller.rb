@@ -1,20 +1,20 @@
-class SessionsController < ApplicationController
-    before_action :authenticate
-    skip_before_action :authenticate, only: [:create]
+class RecipesController < ApplicationController
 
-    def create
-        user = User.find_by(username: params[:username])
-        if user&.authenticate(params[:password])
-            session[:user_id] = user.id
-            render json: user
-        else
-            render json: {errors: ["Invalid Email or Password"]}, status: :unauthorized
-        end
+    def index
+        recipes = Recipe.all
+        render json: recipes, status: :created
     end
 
-    def destroy
-        session.delete :user_id
-        head :no_content
+    def create
+        user = User.find(session[:user_id])
+        recipe = user.recipes.create!(recipe_params)
+        render json: recipe, status: :created
+    end
+
+    private
+
+    def recipe_params
+        params.permit(:title, :instructions, :minutes_to_complete)
     end
 
 end
